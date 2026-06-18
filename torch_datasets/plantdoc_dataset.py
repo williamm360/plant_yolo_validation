@@ -80,7 +80,8 @@ class PlantDoc_Dataset_distilled(Dataset):
             :, :, ::-1]  # reverts the colors into rgb
         img_tensor = torch.from_numpy(
             np.ascontiguousarray(img_array_np)).permute(2, 0, 1)
-        img = self.resize_transform(img_tensor)
+        img_resized = self.resize_transform(img_tensor)
+        img = img_resized.float()
 
         plant_list = list(plants)
         plant_list.extend(["None",]*(self.max_plants-len(plant_list)))
@@ -141,7 +142,7 @@ def get_loader_plantdoc(batch_size=32, num_workers=4, prefetch_factor=3, persist
 
     # Downloads the dataset from Kaggle if it does not currently exist on local fs
     if not os.path.exists("../datasets/plant_doc"):
-        from install import download_plantdoc
+        from torch_datasets.install import download_plantdoc
         log.info("Downloading Dataset")
         download_plantdoc()
 

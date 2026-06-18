@@ -3,11 +3,19 @@ from torch_datasets.plantdoc_dataset import get_loader_plantdoc
 import concurrent.futures
 import multiprocessing
 
-import rich
+from rich.logging import RichHandler
 import logging
 
 
 def inference(loader, plant_models):
+
+    FORMAT = "%(message)s"
+    logging.basicConfig(
+        level="NOTSET", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
+    )
+
+    log = logging.getLogger("rich")
+
     for batch in loader:
         # create batches for each model
         plants, images, labels = batch
@@ -22,10 +30,10 @@ def inference(loader, plant_models):
             plant_labels = [labels for labels, bool_flag in zip(
                 labels, filter_mask) if bool_flag]
             subbatches[plant] = [plant_images, plant_labels]
+        log.info(f"found unique plants: {", ".join(unique_plants)}")
 
-            print(subbatches[plant], "\n")
-        print("New batch! \n subbatches for plants : \n ",
-              "\n  ".join(subbatches.keys()))
+        log.info(
+            f"New batch! \n subbatches for plants : \n {"\n  ".join(subbatches.keys())}")
 
         # Concurrency through thread pool executor (or process pool executor) for parallel processing
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
@@ -33,13 +41,18 @@ def inference(loader, plant_models):
             for plant, subbatch in subbatches.items():
                 imgs, correct_labels = subbatch
                 future = executor.submit(
-                    predictBoxes_batch, imgs, models[plant])
-                futures.append[future]
+                    predictBoxes_batch, imgs, plant)
+                futures.append(future)
             concurrent.futures.wait(futures)
             for ftr in futures:
-                print(ftr)
+                ...
+                print(ftr.result())
+
+    return None
 
 
 if __name__ == "__main__":
-    loader = get_loader_plantdoc()
+    loader = get_loader_plantdoc(batch_size=128)
+    plant_doc_inf = inference(loader, models)
+
     ...

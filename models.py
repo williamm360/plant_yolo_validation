@@ -1,4 +1,5 @@
 from ultralytics import YOLO
+import torch
 # adapted code for multiprocessing and batching
 potatoModel = YOLO("weights/potatoYOLOv11.pt")
 tomatoModel = YOLO("weights/tomatoYOLOv11.pt")
@@ -17,17 +18,24 @@ models = {
 }
 
 
-def predictBoxes_batch(images, plant):
-    results = models[plant](images)
+def predictBoxes_batch(images: torch.Tensor, plant):
+    model = models[plant]
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)
+    model.to(device)
+    images.float().to(device=device, dtype=torch.float32)
+
+    with torch.no_grad():
+        results = model(images)
     output = []
     for res in results:
-        boxes = results[0].boxes
+        boxes = res[0].boxes
         output_per_image = []
         for box in boxes:
             x_min, y_min, x_max, y_max = box.xyxy[0].tolist()
             confidence = box.conf[0].item()
             class_id = int(box.cls[0].item())
-            label = results[0].names[class_id]
+            label = res[0].names[class_id]
             output_per_image.append({
                 "label": label,
                 "confidence": confidence,
