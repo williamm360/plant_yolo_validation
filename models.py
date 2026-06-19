@@ -27,9 +27,11 @@ def predictBoxes_batch(images: torch.Tensor, plant):
 
     with torch.no_grad():
         results = model(images)
+
     output = []
+
     for res in results:
-        boxes = res[0].boxes
+        boxes = res.boxes
         output_per_image = []
         for box in boxes:
             x_min, y_min, x_max, y_max = box.xyxy[0].tolist()
@@ -41,6 +43,7 @@ def predictBoxes_batch(images: torch.Tensor, plant):
                 "confidence": confidence,
                 "box": [x_min, y_min, x_max, y_max]
             })
+        print(output_per_image)
         output.append(output_per_image)
 
     return output
