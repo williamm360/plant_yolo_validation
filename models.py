@@ -28,9 +28,10 @@ def predictBoxes_batch(images: torch.Tensor, plant):
     with torch.no_grad():
         results = model(images)
 
+    results_cpu = [tensor.cpu() for tensor in results]
     output = []
 
-    for res in results:
+    for res in results_cpu:
         boxes = res.boxes
         output_per_image = []
         for box in boxes:
@@ -43,7 +44,8 @@ def predictBoxes_batch(images: torch.Tensor, plant):
                 "confidence": confidence,
                 "box": [x_min, y_min, x_max, y_max]
             })
-        print(output_per_image)
         output.append(output_per_image)
+    # Debug type shit for shape idk
+    print("New", output[0],)
 
     return output

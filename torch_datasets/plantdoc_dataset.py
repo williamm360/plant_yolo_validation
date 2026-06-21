@@ -41,7 +41,8 @@ class PlantDoc_valid_labels_Dataset(Dataset):
         with open(path_labels, "r", encoding="utf-8") as file:
             for line in file:
                 label, x1, y1, x2, y2 = map(str.strip, line.split(" "))
-                labels.append({"label": label, "box": (x1, y1, x2, y2)})
+                labels.append({"label": int(label), "box": (
+                    float(x1), float(y1), float(x2), float(y2))})
         return (path_image, labels)
 
     def __len__(self):
@@ -84,10 +85,10 @@ class PlantDoc_Dataset_distilled(Dataset):
         img = img_resized.float()
 
         plant_list = list(plants)
-        plant_list.extend(["None",]*(self.max_plants-len(plant_list)))
+        plant_list.extend([255,]*(self.max_plants-len(plant_list)))
         plant_list = plant_list[:self.max_plants]
 
-        padding_dict = {"label": "None", "box": ("0", "0", "0", "0")}
+        padding_dict = {"label": 255, "box": (0, 0, 0, 0)}
         labels.extend([padding_dict] * (self.max_labels - len(labels)))
         labels = labels[:self.max_labels]
 
@@ -102,20 +103,20 @@ plantDoc_labels = {"plants":
                    {
                        "Potato":
                        {
-                           "labels": {"11": "EarlyBlight", "12": "LateBlight", "13": "Healthy"},
-                           "idx": {"11", "12", "13"},
+                           "labels": {11: "EarlyBlight", 12: "LateBlight", 13: "Healthy"},
+                           "idx": {11, 12, 13},
                        },
                        "Tomato":
                        {
-                           "labels": {"19": "EarlyBlight", "20": "SeptoriaLeafSpot",
-                                      "21": "BacterialSpot", "22": "TomatoLateBlight",
-                                      "23": "MosaicVirus", "24": "YellowLeafCurlVirus",
-                                      "25": "HealthyTomato", "26": "LeafMold", "27": "SpiderMites"},
+                           "labels": {19: "EarlyBlight", 20: "SeptoriaLeafSpot",
+                                      21: "BacterialSpot", 22: "TomatoLateBlight",
+                                      23: "MosaicVirus", 24: "YellowLeafCurlVirus",
+                                      25: "HealthyTomato", 26: "LeafMold", 27: "SpiderMites"},
                            # index
-                           "idx": {"19", "20", "21", "22", "23", "24", "25", "26", "27"}
+                           "idx": {19, 20, 21, 22, 23, 24, 25, 26, 27}
                        },
                    },
-                   "used_idx": {"11", "12", "13", "19", "20", "21", "22", "23", "24", "25", "26", "27"}
+                   "used_idx": {11, 12, 13, 19, 20, 21, 22, 23, 24, 25, 26, 27}
                    }
 
 
